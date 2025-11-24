@@ -3,14 +3,6 @@
  * Copyright (c) 2019-2024 Hailo Technologies Ltd. All rights reserved.
  **/
 
-
-/* MULTI_INSTRUMENT: Auto-added headers */
-#include <asm/stacktrace.h>
-#include <linux/kernel.h>
-#include <linux/printk.h>
-#include <linux/sched.h>
-#include <linux/uaccess.h>
-
 #include <linux/version.h>
 #include <linux/init.h>
 #include <linux/module.h>
@@ -79,7 +71,6 @@ static struct semaphore g_hailo_add_board_mutex = __SEMAPHORE_INITIALIZER(g_hail
   ******************************* */
 bool power_mode_enabled(void)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function power_mode_enabled at %s:%d\n", __FILE__, __LINE__);
 #if !defined(HAILO_EMULATOR)
     return g_is_power_mode_enabled;
 #else /* !defined(HAILO_EMULATOR) */
@@ -94,7 +85,6 @@ bool power_mode_enabled(void)
  */
 static int hailo_get_desc_page_size(struct pci_dev *pdev, u32 *out_page_size)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_get_desc_page_size at %s:%d\n", __FILE__, __LINE__);
     u16 pcie_device_control = 0;
     int err = 0;
     // The default page size must be smaller/equal to 32K (due to PLDA registers limit).
@@ -144,7 +134,6 @@ static int hailo_get_desc_page_size(struct pci_dev *pdev, u32 *out_page_size)
 // should be called only from fops_open (once)
 struct hailo_pcie_board* hailo_pcie_get_board_index(u32 index)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_get_board_index at %s:%d\n", __FILE__, __LINE__);
     struct hailo_pcie_board *pBoard, *pRet = NULL;
 
     down(&g_hailo_add_board_mutex);
@@ -172,7 +161,6 @@ struct hailo_pcie_board* hailo_pcie_get_board_index(u32 index)
  **/
 static int hailo_pcie_disable_aspm(struct hailo_pcie_board *board, u16 state, bool locked)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_disable_aspm at %s:%d\n", __FILE__, __LINE__);
     struct pci_dev *pdev = board->pDev;
     struct pci_dev *parent = pdev->bus->self;
     u16 aspm_dis_mask = 0;
@@ -264,7 +252,6 @@ static int hailo_pcie_disable_aspm(struct hailo_pcie_board *board, u16 state, bo
 
 static void hailo_pcie_insert_board(struct hailo_pcie_board* pBoard)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_insert_board at %s:%d\n", __FILE__, __LINE__);
     u32 index = 0;
     struct hailo_pcie_board *pCurrent, *pNext;
 
@@ -299,7 +286,6 @@ static void hailo_pcie_insert_board(struct hailo_pcie_board* pBoard)
 
 static void hailo_pcie_remove_board(struct hailo_pcie_board* pBoard)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_remove_board at %s:%d\n", __FILE__, __LINE__);
     down(&g_hailo_add_board_mutex);
     if (pBoard)
     {
@@ -317,7 +303,6 @@ static void hailo_pcie_remove_board(struct hailo_pcie_board* pBoard)
  */
 static bool wait_for_firmware_completion(struct completion *completion, unsigned int msecs)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function wait_for_firmware_completion at %s:%d\n", __FILE__, __LINE__);
     return (0 != wait_for_completion_timeout(completion, msecs_to_jiffies(msecs)));
 }
 
@@ -337,7 +322,6 @@ static bool wait_for_firmware_completion(struct completion *completion, unsigned
 static int pcie_vdma_program_one_file_descriptors(struct device *dev, struct hailo_pcie_boot_dma_channel_state *boot_channel_state,
     u32 file_address, struct hailo_vdma_mapped_transfer_buffer transfer_buffer, u8 channel_index, const char *filename, bool raise_int_on_completion)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function pcie_vdma_program_one_file_descriptors at %s:%d\n", __FILE__, __LINE__);
     int device_desc = 0, host_desc = 0;
     enum hailo_vdma_interrupts_domain interrupts_domain = raise_int_on_completion ? HAILO_VDMA_INTERRUPTS_DOMAIN_HOST :
         HAILO_VDMA_INTERRUPTS_DOMAIN_NONE;
@@ -385,7 +369,6 @@ static int pcie_vdma_program_one_file_descriptors(struct device *dev, struct hai
 static int pcie_vdma_program_one_file(struct hailo_pcie_board *board, struct hailo_pcie_boot_dma_state *boot_dma_state, u32 file_address,
     const char *filename, bool raise_int_on_completion)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function pcie_vdma_program_one_file at %s:%d\n", __FILE__, __LINE__);
     const struct firmware *firmware = NULL;
     struct hailo_vdma_mapped_transfer_buffer transfer_buffer = {0};
     int desc_programmed = 0;
@@ -480,7 +463,6 @@ static int pcie_vdma_program_one_file(struct hailo_pcie_board *board, struct hai
 static long pcie_vdma_program_entire_batch(struct hailo_pcie_board *board, struct hailo_pcie_boot_dma_state *boot_dma_state,
     struct hailo_pcie_resources *resources, u32 stage)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function pcie_vdma_program_entire_batch at %s:%d\n", __FILE__, __LINE__);
     long err = 0;
     int file_index = 0;
     const struct hailo_pcie_loading_stage *stage_info = hailo_pcie_get_loading_stage_info(resources->board_type, stage);
@@ -519,11 +501,6 @@ static long pcie_vdma_program_entire_batch(struct hailo_pcie_board *board, struc
  */
 static void pcie_vdma_release_noncontinuous_memory(struct device *dev, struct sg_table *sg_table, void *kernel_addrs)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function pcie_vdma_release_noncontinuous_memory at %s:%d\n", __FILE__, __LINE__);
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_unmap_sg from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_unmap_sg called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_unmap_sg\n");
     dma_unmap_sg(dev, sg_table->sgl, sg_table->orig_nents, DMA_TO_DEVICE);
     sg_free_table(sg_table);
     vfree(kernel_addrs);
@@ -540,7 +517,6 @@ printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_unmap_sg\n");
  */
 static long pcie_vdma_allocate_noncontinuous_memory(struct device *dev, u64 buffer_size, void **kernel_addrs, struct sg_table *sg_table)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function pcie_vdma_allocate_noncontinuous_memory at %s:%d\n", __FILE__, __LINE__);
     struct page **pages = NULL;
     size_t npages = 0;
     struct scatterlist *sgl = NULL;
@@ -586,10 +562,6 @@ static long pcie_vdma_allocate_noncontinuous_memory(struct device *dev, u64 buff
     }
 
     // map the sg list
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_map_sg from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_map_sg called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_map_sg\n");
     sg_table->nents = dma_map_sg(dev, sg_table->sgl, sg_table->orig_nents, DMA_TO_DEVICE);
     if (0 == sg_table->nents) {
         hailo_dev_err(dev, "failed to map sg list for user buffer\n");
@@ -603,10 +575,6 @@ printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_map_sg\n");
     goto exit;
 
 release_sg_table:
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_unmap_sg from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_unmap_sg called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_unmap_sg\n");
     dma_unmap_sg(dev, sg_table->sgl, sg_table->orig_nents, DMA_TO_DEVICE);
 release_array:
     kfree(pages);
@@ -626,7 +594,6 @@ exit:
 static void pcie_vdme_release_boot_resources(struct hailo_pcie_board *board, struct hailo_vdma_engine *engine,
     struct hailo_pcie_boot_dma_state *boot_dma_state)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function pcie_vdme_release_boot_resources at %s:%d\n", __FILE__, __LINE__);
     u8 channel_index = 0;
 
     // release all the resources
@@ -664,7 +631,6 @@ static void pcie_vdme_release_boot_resources(struct hailo_pcie_board *board, str
 static long pcie_vdme_allocate_boot_resources(u32 desc_page_size, struct hailo_pcie_board *board,
     struct hailo_pcie_boot_dma_state *boot_dma_state, struct hailo_vdma_engine *engine)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function pcie_vdme_allocate_boot_resources at %s:%d\n", __FILE__, __LINE__);
     long err = 0;
     uintptr_t device_handle = 0, host_handle = 0;
     u8 channel_index = 0;
@@ -739,7 +705,6 @@ release_all_resources:
  */
 static long pcie_write_firmware_batch_over_dma(struct hailo_pcie_board *board, u32 stage, u32 desc_page_size)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function pcie_write_firmware_batch_over_dma at %s:%d\n", __FILE__, __LINE__);
     long err = 0;
     struct hailo_vdma_engine *engine = &board->vdma.vdma_engines[PCI_VDMA_ENGINE_INDEX];
     u8 channel_index = 0;
@@ -793,7 +758,6 @@ release_all:
 static int load_soc_firmware(struct hailo_pcie_board *board, struct hailo_pcie_resources *resources,
     struct device *dev, struct completion *fw_load_completion)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function load_soc_firmware at %s:%d\n", __FILE__, __LINE__);
     u32 boot_status = 0;
     int err = 0;
     u32 second_stage = force_boot_linux_from_eemc ? SECOND_STAGE_LINUX_IN_EMMC : SECOND_STAGE;
@@ -844,7 +808,6 @@ static int load_soc_firmware(struct hailo_pcie_board *board, struct hailo_pcie_r
 }
 static int load_nnc_firmware(struct hailo_pcie_board *board)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function load_nnc_firmware at %s:%d\n", __FILE__, __LINE__);
     u32 boot_status = 0;
     int err = 0;
     struct device *dev = &board->pDev->dev;
@@ -884,7 +847,6 @@ static int load_nnc_firmware(struct hailo_pcie_board *board)
 
 int hailo_pcie_soft_reset(struct hailo_pcie_resources *resources, struct completion *reset_completed)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_soft_reset at %s:%d\n", __FILE__, __LINE__);
     bool completion_result = false;
     int err = 0;
 
@@ -909,7 +871,6 @@ int hailo_pcie_soft_reset(struct hailo_pcie_resources *resources, struct complet
 
 static int load_firmware(struct hailo_pcie_board *board)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function load_firmware at %s:%d\n", __FILE__, __LINE__);
     switch (board->pcie_resources.accelerator_type) {
     case HAILO_ACCELERATOR_TYPE_SOC:
         return load_soc_firmware(board, &board->pcie_resources, &board->pDev->dev, &board->fw_boot.fw_loaded_completion);
@@ -923,7 +884,6 @@ static int load_firmware(struct hailo_pcie_board *board)
 
 static int enable_boot_interrupts(struct hailo_pcie_board *board)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function enable_boot_interrupts at %s:%d\n", __FILE__, __LINE__);
     int err = hailo_enable_interrupts(board);
     if (err < 0) {
         hailo_err(board, "Failed enabling interrupts %d\n", err);
@@ -936,14 +896,12 @@ static int enable_boot_interrupts(struct hailo_pcie_board *board)
 
 static void disable_boot_interrupts(struct hailo_pcie_board *board)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function disable_boot_interrupts at %s:%d\n", __FILE__, __LINE__);
     board->fw_boot.is_in_boot = false;
     hailo_disable_interrupts(board);
 }
 
 static int hailo_activate_board(struct hailo_pcie_board *board)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_activate_board at %s:%d\n", __FILE__, __LINE__);
     int err = 0;
     ktime_t start_time = 0, end_time = 0;
 
@@ -980,7 +938,6 @@ static int hailo_activate_board(struct hailo_pcie_board *board)
 
 int hailo_enable_interrupts(struct hailo_pcie_board *board)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_enable_interrupts at %s:%d\n", __FILE__, __LINE__);
     int err = 0;
 
     if (board->interrupts_enabled) {
@@ -1011,7 +968,6 @@ int hailo_enable_interrupts(struct hailo_pcie_board *board)
 
 void hailo_disable_interrupts(struct hailo_pcie_board *board)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_disable_interrupts at %s:%d\n", __FILE__, __LINE__);
     // Sanity Check
     if ((NULL == board) || (NULL == board->pDev)) {
         pr_err("Failed to access board or device\n");
@@ -1030,7 +986,6 @@ void hailo_disable_interrupts(struct hailo_pcie_board *board)
 
 static int hailo_bar_iomap(struct pci_dev *pdev, int bar, struct hailo_resource *resource)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_bar_iomap at %s:%d\n", __FILE__, __LINE__);
     resource->size = pci_resource_len(pdev, bar);
     resource->address = (uintptr_t)(pci_iomap(pdev, bar, resource->size));
 
@@ -1046,7 +1001,6 @@ static int hailo_bar_iomap(struct pci_dev *pdev, int bar, struct hailo_resource 
 
 static void hailo_bar_iounmap(struct pci_dev *pdev, struct hailo_resource *resource)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_bar_iounmap at %s:%d\n", __FILE__, __LINE__);
     if (resource->address) {
         pci_iounmap(pdev, (void*)resource->address);
         resource->address = 0;
@@ -1057,7 +1011,6 @@ static void hailo_bar_iounmap(struct pci_dev *pdev, struct hailo_resource *resou
 static int pcie_resources_init(struct pci_dev *pdev, struct hailo_pcie_resources *resources,
     enum hailo_board_type board_type)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function pcie_resources_init at %s:%d\n", __FILE__, __LINE__);
     int err = -EINVAL;
     if (board_type >= HAILO_BOARD_TYPE_COUNT) {
         pci_err(pdev, "Probing: Invalid board type %d\n", (int)board_type);
@@ -1122,7 +1075,6 @@ failure_exit:
 
 static void pcie_resources_release(struct pci_dev *pdev, struct hailo_pcie_resources *resources)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function pcie_resources_release at %s:%d\n", __FILE__, __LINE__);
     hailo_bar_iounmap(pdev, &resources->config);
     hailo_bar_iounmap(pdev, &resources->vdma_registers);
     hailo_bar_iounmap(pdev, &resources->fw_access);
@@ -1132,7 +1084,6 @@ static void pcie_resources_release(struct pci_dev *pdev, struct hailo_pcie_resou
 static void update_channel_interrupts(struct hailo_vdma_controller *controller,
     size_t engine_index, u32 channels_bitmap)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function update_channel_interrupts at %s:%d\n", __FILE__, __LINE__);
     struct hailo_pcie_board *board = (struct hailo_pcie_board*) dev_get_drvdata(controller->dev);
     if (engine_index >= board->vdma.vdma_engines_count) {
         hailo_err(board, "Invalid engine index %zu", engine_index);
@@ -1150,7 +1101,6 @@ static struct hailo_vdma_controller_ops pcie_vdma_controller_ops = {
 static int hailo_pcie_vdma_controller_init(struct hailo_vdma_controller *controller,
     struct device *dev, struct hailo_resource *vdma_registers)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_vdma_controller_init at %s:%d\n", __FILE__, __LINE__);
     const size_t engines_count = 1;
     return hailo_vdma_controller_init(controller, dev, &hailo_pcie_vdma_hw,
         &pcie_vdma_controller_ops, vdma_registers, engines_count);
@@ -1161,7 +1111,6 @@ static int hailo_pcie_vdma_controller_init(struct hailo_vdma_controller *control
 // won't be dma capable as well.
 static bool is_kmalloc_dma_capable(struct device *dev)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function is_kmalloc_dma_capable at %s:%d\n", __FILE__, __LINE__);
     void *check_addr = NULL;
     dma_addr_t dma_addr = 0;
     phys_addr_t phys_addr = 0;
@@ -1187,7 +1136,6 @@ static bool is_kmalloc_dma_capable(struct device *dev)
 
 static int hailo_get_allocation_mode(struct pci_dev *pdev, enum hailo_allocation_mode *allocation_mode)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_get_allocation_mode at %s:%d\n", __FILE__, __LINE__);
     // Check if module paramater was given to override driver choice
     if (HAILO_NO_FORCE_BUFFER != force_allocation_from_driver) {
         if (HAILO_FORCE_BUFFER_FROM_USERSPACE == force_allocation_from_driver) {
@@ -1220,7 +1168,6 @@ static int hailo_get_allocation_mode(struct pci_dev *pdev, enum hailo_allocation
 
 static int hailo_pcie_probe(struct pci_dev* pDev, const struct pci_device_id* id)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_probe at %s:%d\n", __FILE__, __LINE__);
     struct hailo_pcie_board * pBoard;
     struct device *char_device = NULL;
     int err = -EINVAL;
@@ -1345,7 +1292,6 @@ probe_exit:
 
 static void hailo_pcie_remove(struct pci_dev* pDev)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_remove at %s:%d\n", __FILE__, __LINE__);
     struct hailo_pcie_board* pBoard = (struct hailo_pcie_board*) pci_get_drvdata(pDev);
 
     pci_notice(pDev, "Remove: Releasing board\n");
@@ -1399,7 +1345,6 @@ static void hailo_pcie_remove(struct pci_dev* pDev)
 
 inline int driver_down(struct hailo_pcie_board *board)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function driver_down at %s:%d\n", __FILE__, __LINE__);
     if (board->pcie_resources.accelerator_type == HAILO_ACCELERATOR_TYPE_NNC) {
         return hailo_nnc_driver_down(board);
     } else {
@@ -1410,7 +1355,6 @@ inline int driver_down(struct hailo_pcie_board *board)
 #ifdef CONFIG_PM_SLEEP
 static int hailo_pcie_suspend(struct device *dev)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_suspend at %s:%d\n", __FILE__, __LINE__);
     struct hailo_pcie_board *board = (struct hailo_pcie_board*) dev_get_drvdata(dev);
     struct hailo_file_context *cur = NULL;
     int err = 0;
@@ -1443,7 +1387,6 @@ static int hailo_pcie_suspend(struct device *dev)
 
 static int hailo_pcie_resume(struct device *dev)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_resume at %s:%d\n", __FILE__, __LINE__);
     struct hailo_pcie_board *board = (struct hailo_pcie_board*) dev_get_drvdata(dev);
     int err = 0;
 
@@ -1462,7 +1405,6 @@ static SIMPLE_DEV_PM_OPS(hailo_pcie_pm_ops, hailo_pcie_suspend, hailo_pcie_resum
 #if LINUX_VERSION_CODE >= KERNEL_VERSION( 3, 16, 0 )
 static void hailo_pci_reset_prepare(struct pci_dev *pdev)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pci_reset_prepare at %s:%d\n", __FILE__, __LINE__);
     struct hailo_pcie_board* board = (struct hailo_pcie_board*) pci_get_drvdata(pdev);
     int err = 0;
     /* Reset preparation logic goes here */
@@ -1487,7 +1429,6 @@ static void hailo_pci_reset_prepare(struct pci_dev *pdev)
 #if LINUX_VERSION_CODE < KERNEL_VERSION( 4, 13, 0 ) && LINUX_VERSION_CODE >= KERNEL_VERSION( 3, 16, 0 )
 static void hailo_pci_reset_notify(struct pci_dev *pdev, bool prepare)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pci_reset_notify at %s:%d\n", __FILE__, __LINE__);
     if (prepare) {
         hailo_pci_reset_prepare(pdev);
     }
@@ -1540,7 +1481,6 @@ MODULE_DEVICE_TABLE (pci, hailo_pcie_id_table);
 
 static int hailo_pcie_register_chrdev(unsigned int major, const char *name)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_register_chrdev at %s:%d\n", __FILE__, __LINE__);
     int char_major;
 
     char_major = register_chrdev(major, name, &hailo_pcie_fops);
@@ -1552,14 +1492,12 @@ static int hailo_pcie_register_chrdev(unsigned int major, const char *name)
 
 static void hailo_pcie_unregister_chrdev(unsigned int major, const char *name)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_unregister_chrdev at %s:%d\n", __FILE__, __LINE__);
     class_destroy(chardev_class);
     unregister_chrdev(major, name);
 }
 
 static int __init hailo_pcie_module_init(void)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_module_init at %s:%d\n", __FILE__, __LINE__);
     int err;
 
     pr_notice(DRIVER_NAME ": Init module. driver version %s\n", HAILO_DRV_VER);
@@ -1584,7 +1522,6 @@ static int __init hailo_pcie_module_init(void)
 
 static void __exit hailo_pcie_module_exit(void)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_pcie_module_exit at %s:%d\n", __FILE__, __LINE__);
 
     pr_notice(DRIVER_NAME ": Exit module.\n");
 

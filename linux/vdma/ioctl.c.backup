@@ -3,14 +3,6 @@
  * Copyright (c) 2019-2024 Hailo Technologies Ltd. All rights reserved.
  **/
 
-
-/* MULTI_INSTRUMENT: Auto-added headers */
-#include <asm/stacktrace.h>
-#include <linux/kernel.h>
-#include <linux/printk.h>
-#include <linux/sched.h>
-#include <linux/uaccess.h>
-
 #include "ioctl.h"
 #include "memory.h"
 #include "utils/logs.h"
@@ -22,14 +14,11 @@
 
 long hailo_vdma_enable_channels_ioctl(struct hailo_vdma_controller *controller, unsigned long arg, struct hailo_vdma_file_context *context)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_vdma_enable_channels_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_enable_channels_params input;
     struct hailo_vdma_engine *engine = NULL;
     u8 engine_index = 0;
     u32 channels_bitmap = 0;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&input, (void *)arg, sizeof(input))) {
         hailo_dev_err(controller->dev, "copy_from_user fail\n");
         return -ENOMEM;
@@ -61,15 +50,12 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 
 long hailo_vdma_disable_channels_ioctl(struct hailo_vdma_controller *controller, unsigned long arg, struct hailo_vdma_file_context *context)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_vdma_disable_channels_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_disable_channels_params input;
     struct hailo_vdma_engine *engine = NULL;
     u8 engine_index = 0;
     u32 channels_bitmap = 0;
     unsigned long irq_saved_flags = 0;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&input, (void*)arg, sizeof(input))) {
         hailo_dev_err(controller->dev, "copy_from_user fail\n");
         return -ENOMEM;
@@ -133,7 +119,6 @@ static void transfer_done(struct hailo_ongoing_transfer *transfer, void *opaque)
 long hailo_vdma_interrupts_wait_ioctl(struct hailo_vdma_controller *controller, unsigned long arg,
     struct semaphore *mutex, bool *should_up_board_mutex)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_vdma_interrupts_wait_ioctl called at %s:%d\n", __FILE__, __LINE__);
     long err = 0;
     struct hailo_vdma_interrupts_wait_params params = {0};
     struct hailo_vdma_engine *engine = NULL;
@@ -142,8 +127,6 @@ long hailo_vdma_interrupts_wait_ioctl(struct hailo_vdma_controller *controller, 
     u32 irq_bitmap = 0;
     unsigned long irq_saved_flags = 0;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&params, (void*)arg, sizeof(params))) {
         hailo_dev_err(controller->dev, "HAILO_VDMA_INTERRUPTS_WAIT, copy_from_user fail\n");
         return -ENOMEM;
@@ -196,8 +179,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
         }
     }
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, &params, sizeof(params))) {
         hailo_dev_err(controller->dev, "copy_to_user fail\n");
         return -ENOMEM;
@@ -219,14 +200,11 @@ static uintptr_t hailo_get_next_vdma_handle(struct hailo_vdma_file_context *cont
 long hailo_vdma_buffer_map_ioctl(struct hailo_vdma_file_context *context, struct hailo_vdma_controller *controller,
     unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_vdma_buffer_map_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_buffer_map_params buf_info;
     struct hailo_vdma_buffer *mapped_buffer = NULL;
     enum dma_data_direction direction = DMA_NONE;
     struct hailo_vdma_low_memory_buffer *low_memory_buffer = NULL;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&buf_info, (void __user*)arg, sizeof(buf_info))) {
         hailo_dev_err(controller->dev, "copy from user fail\n");
         return -EFAULT;
@@ -252,8 +230,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 
     mapped_buffer->handle = atomic_inc_return(&context->last_vdma_user_buffer_handle);
     buf_info.mapped_handle = mapped_buffer->handle;
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, &buf_info, sizeof(buf_info))) {
         hailo_dev_err(controller->dev, "copy_to_user fail\n");
         hailo_vdma_buffer_put(mapped_buffer);
@@ -269,12 +245,9 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 long hailo_vdma_buffer_unmap_ioctl(struct hailo_vdma_file_context *context, struct hailo_vdma_controller *controller,
     unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_vdma_buffer_unmap_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_buffer *mapped_buffer = NULL;
     struct hailo_vdma_buffer_unmap_params buffer_unmap_params;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&buffer_unmap_params, (void __user*)arg, sizeof(buffer_unmap_params))) {
         hailo_dev_err(controller->dev, "copy from user fail\n");
         return -EFAULT;
@@ -295,12 +268,9 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 
 long hailo_vdma_buffer_sync_ioctl(struct hailo_vdma_file_context *context, struct hailo_vdma_controller *controller, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_vdma_buffer_sync_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_buffer_sync_params sync_info = {};
     struct hailo_vdma_buffer *mapped_buffer = NULL;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&sync_info, (void __user*)arg, sizeof(sync_info))) {
         hailo_dev_err(controller->dev, "copy_from_user fail\n");
         return -EFAULT;
@@ -330,14 +300,11 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 long hailo_desc_list_create_ioctl(struct hailo_vdma_file_context *context, struct hailo_vdma_controller *controller,
     unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_desc_list_create_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_desc_list_create_params params;
     struct hailo_descriptors_list_buffer *descriptors_buffer = NULL;
     uintptr_t next_handle = 0;
     long err = -EINVAL;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&params, (void __user*)arg, sizeof(params))) {
         hailo_dev_err(controller->dev, "copy_from_user fail\n");
         return -EFAULT;
@@ -383,8 +350,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
     params.dma_address = descriptors_buffer->dma_address;
     params.desc_handle = descriptors_buffer->handle;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if(copy_to_user((void __user*)arg, &params, sizeof(params))){
         hailo_dev_err(controller->dev, "copy_to_user fail\n");
         list_del(&descriptors_buffer->descriptors_buffer_list);
@@ -401,12 +366,9 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 long hailo_desc_list_release_ioctl(struct hailo_vdma_file_context *context, struct hailo_vdma_controller *controller,
     unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_desc_list_release_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_desc_list_release_params params;
     struct hailo_descriptors_list_buffer *descriptors_buffer = NULL;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&params, (void __user*)arg, sizeof(params))) {
         hailo_dev_err(controller->dev, "copy_from_user fail\n");
         return -EFAULT;
@@ -427,14 +389,11 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 long hailo_desc_list_program_ioctl(struct hailo_vdma_file_context *context, struct hailo_vdma_controller *controller,
     unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_desc_list_program_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_desc_list_program_params configure_info;
     struct hailo_vdma_buffer *mapped_buffer = NULL;
     struct hailo_descriptors_list_buffer *descriptors_buffer = NULL;
     struct hailo_vdma_mapped_transfer_buffer transfer_buffer = {0};
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&configure_info, (void __user*)arg, sizeof(configure_info))) {
         hailo_dev_err(controller->dev, "copy from user fail\n");
         return -EFAULT;
@@ -473,13 +432,10 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 long hailo_vdma_low_memory_buffer_alloc_ioctl(struct hailo_vdma_file_context *context, struct hailo_vdma_controller *controller,
     unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_vdma_low_memory_buffer_alloc_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_allocate_low_memory_buffer_params buf_info = {0};
     struct hailo_vdma_low_memory_buffer *low_memory_buffer = NULL;
     long err = -EINVAL;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&buf_info, (void __user*)arg, sizeof(buf_info))) {
         hailo_dev_err(controller->dev, "copy from user fail\n");
         return -EFAULT;
@@ -504,8 +460,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
     list_add(&low_memory_buffer->vdma_low_memory_buffer_list, &context->vdma_low_memory_buffer_list);
 
     buf_info.buffer_handle = low_memory_buffer->handle;
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, &buf_info, sizeof(buf_info))) {
         hailo_dev_err(controller->dev, "copy_to_user fail\n");
         list_del(&low_memory_buffer->vdma_low_memory_buffer_list);
@@ -520,12 +474,9 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 long hailo_vdma_low_memory_buffer_free_ioctl(struct hailo_vdma_file_context *context, struct hailo_vdma_controller *controller,
     unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_vdma_low_memory_buffer_free_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_low_memory_buffer *low_memory_buffer = NULL;
     struct hailo_free_low_memory_buffer_params params = {0};
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&params, (void __user*)arg, sizeof(params))) {
         hailo_dev_err(controller->dev, "copy from user fail\n");
         return -EFAULT;
@@ -545,7 +496,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 
 long hailo_mark_as_in_use(struct hailo_vdma_controller *controller, unsigned long arg, struct file *filp)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_mark_as_in_use called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_mark_as_in_use_params params = {0};
 
     // If device is used by this FD, return false to indicate its free for usage
@@ -558,8 +508,6 @@ long hailo_mark_as_in_use(struct hailo_vdma_controller *controller, unsigned lon
         params.in_use = false;
     }
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, &params, sizeof(params))) {
         hailo_dev_err(controller->dev, "copy_to_user fail\n");
         return -EFAULT;
@@ -570,14 +518,11 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 
 long hailo_vdma_continuous_buffer_alloc_ioctl(struct hailo_vdma_file_context *context, struct hailo_vdma_controller *controller, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_vdma_continuous_buffer_alloc_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_allocate_continuous_buffer_params buf_info = {0};
     struct hailo_vdma_continuous_buffer *continuous_buffer = NULL;
     long err = -EINVAL;
     size_t aligned_buffer_size = 0;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&buf_info, (void __user*)arg, sizeof(buf_info))) {
         hailo_dev_err(controller->dev, "copy from user fail\n");
         return -EFAULT;
@@ -602,8 +547,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 
     buf_info.buffer_handle = continuous_buffer->handle;
     buf_info.dma_address = continuous_buffer->dma_address;
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, &buf_info, sizeof(buf_info))) {
         hailo_dev_err(controller->dev, "copy_to_user fail\n");
         list_del(&continuous_buffer->continuous_buffer_list);
@@ -617,12 +560,9 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 
 long hailo_vdma_continuous_buffer_free_ioctl(struct hailo_vdma_file_context *context, struct hailo_vdma_controller *controller, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_vdma_continuous_buffer_free_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_free_continuous_buffer_params params;
     struct hailo_vdma_continuous_buffer *continuous_buffer = NULL;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&params, (void __user*)arg, sizeof(params))) {
         hailo_dev_err(controller->dev, "copy from user fail\n");
         return -EFAULT;
@@ -642,15 +582,12 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 
 long hailo_vdma_interrupts_read_timestamps_ioctl(struct hailo_vdma_controller *controller, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_vdma_interrupts_read_timestamps_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_interrupts_read_timestamp_params *params = &controller->read_interrupt_timestamps_params;
     struct hailo_vdma_engine *engine = NULL;
     int err = -EINVAL;
 
     hailo_dev_dbg(controller->dev, "Start read interrupt timestamps ioctl\n");
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(params, (void __user*)arg, sizeof(*params))) {
         hailo_dev_err(controller->dev, "copy_from_user fail\n");
         return -ENOMEM;
@@ -669,8 +606,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
         return err;
     }
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, params, sizeof(*params))) {
         hailo_dev_err(controller->dev, "copy_to_user fail\n");
         return -ENOMEM;
@@ -682,7 +617,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 long hailo_vdma_launch_transfer_ioctl(struct hailo_vdma_file_context *context, struct hailo_vdma_controller *controller,
     unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_vdma_launch_transfer_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_launch_transfer_params params;
     struct hailo_vdma_engine *engine = NULL;
     struct hailo_vdma_channel *channel = NULL;
@@ -691,8 +625,6 @@ long hailo_vdma_launch_transfer_ioctl(struct hailo_vdma_file_context *context, s
     int ret = -EINVAL;
     u8 i = 0;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&params, (void __user*)arg, sizeof(params))) {
         hailo_dev_err(controller->dev, "copy from user fail\n");
         return -EFAULT;
@@ -771,8 +703,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
             hailo_dev_err(controller->dev, "Failed launch transfer %d\n", ret);
         }
         // Still need to copy fail status back to userspace - success oriented
-        printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
         if (copy_to_user((void __user*)arg, &params, sizeof(params))) {
             hailo_dev_err(controller->dev, "copy_to_user fail\n");
         }
@@ -782,8 +712,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
     params.descs_programed = ret;
     params.launch_transfer_status = 0;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, &params, sizeof(params))) {
         hailo_dev_err(controller->dev, "copy_to_user fail\n");
         return -EFAULT;

@@ -7,14 +7,6 @@
  * some application processor (pci_ep).
  */
 
-
-/* MULTI_INSTRUMENT: Auto-added headers */
-#include <asm/stacktrace.h>
-#include <linux/kernel.h>
-#include <linux/printk.h>
-#include <linux/sched.h>
-#include <linux/uaccess.h>
-
 #include "soc.h"
 
 #include "vdma_common.h"
@@ -38,7 +30,6 @@ void hailo_soc_init(struct hailo_pcie_soc *soc)
 long hailo_soc_ioctl(struct hailo_pcie_board *board, struct hailo_file_context *context,
     struct hailo_vdma_controller *controller, unsigned int cmd, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_soc_ioctl called at %s:%d\n", __FILE__, __LINE__);
     switch (cmd) {
     case HAILO_SOC_CONNECT:
         return hailo_soc_connect_ioctl(board, context, controller, arg);
@@ -91,7 +82,6 @@ static int soc_control(struct hailo_pcie_board *board,
 long hailo_soc_connect_ioctl(struct hailo_pcie_board *board, struct hailo_file_context *context,
     struct hailo_vdma_controller *controller, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_soc_connect_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_pcie_soc_request request = {0};
     struct hailo_pcie_soc_response response = {0};
     struct hailo_soc_connect_params params;
@@ -102,8 +92,6 @@ long hailo_soc_connect_ioctl(struct hailo_pcie_board *board, struct hailo_file_c
     struct hailo_descriptors_list_buffer *output_descriptors_buffer = NULL;
     int err = 0;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&params, (void *)arg, sizeof(params))) {
         hailo_err(board, "copy_from_user fail\n");
         return -ENOMEM;
@@ -175,8 +163,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
     // Store the output channels state in bitmap (open)
     hailo_set_bit(params.output_channel_index, &context->soc_used_channels_bitmap);
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void *)arg, &params, sizeof(params))) {
         hailo_dev_err(&board->pDev->dev, "copy_to_user fail\n");
         return -ENOMEM;
@@ -212,13 +198,10 @@ static int close_channels(struct hailo_pcie_board *board, u32 channels_bitmap)
 long hailo_soc_close_ioctl(struct hailo_pcie_board *board, struct hailo_vdma_controller *controller, 
     struct hailo_file_context *context, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_soc_close_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_soc_close_params params;
     u32 channels_bitmap = 0;
     int err = 0;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&params, (void *)arg, sizeof(params))) {
         hailo_dev_err(&board->pDev->dev, "copy_from_user fail\n");
         return -ENOMEM;

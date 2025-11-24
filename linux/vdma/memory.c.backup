@@ -3,14 +3,7 @@
  * Copyright (c) 2019-2024 Hailo Technologies Ltd. All rights reserved.
  **/
 
-
-/* MULTI_INSTRUMENT: Auto-added headers */
-#include <asm/stacktrace.h>
-#include <linux/kernel.h>
-#include <linux/printk.h>
-#include <linux/sched.h>
-#include <linux/uaccess.h>
-
+#define pr_fmt(fmt) "hailo: " fmt
 
 #include "memory.h"
 #include "utils.h"
@@ -48,16 +41,11 @@ MODULE_IMPORT_NS(DMA_NS_NAME);
 static int hailo_map_dmabuf(struct device *dev, int dmabuf_fd, enum dma_data_direction direction, struct sg_table *sgt,
     struct hailo_dmabuf_info *dmabuf_info)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_map_dmabuf at %s:%d\n", __FILE__, __LINE__);
     int ret = -EINVAL;
     struct dma_buf *dmabuf = NULL;
     struct dma_buf_attachment *dmabuf_attachment = NULL;
     struct sg_table *res_sgt = NULL;
 
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_buf_get from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_buf_get called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_buf_get\n");
     dmabuf = dma_buf_get(dmabuf_fd);
     if (IS_ERR(dmabuf)) {
         dev_err(dev, "dma_buf_get failed, err=%ld\n", PTR_ERR(dmabuf));
@@ -65,10 +53,6 @@ printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_buf_get\n");
         goto cleanup;
     }
 
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_buf_attach from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_buf_attach called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_buf_attach\n");
     dmabuf_attachment = dma_buf_attach(dmabuf, dev);
     if (IS_ERR(dmabuf_attachment)) {
         dev_err(dev, "dma_buf_attach failed, err=%ld\n", PTR_ERR(dmabuf_attachment));
@@ -76,10 +60,6 @@ printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_buf_attach\n");
         goto l_buf_get;
     }
 
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_buf_map_attachment from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_buf_map_attachment called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_buf_map_attachment\n");
     res_sgt = dma_buf_map_attachment(dmabuf_attachment, direction);
     if (IS_ERR(res_sgt)) {
         dev_err(dev, "dma_buf_map_attachment failed, err=%ld\n", PTR_ERR(res_sgt));
@@ -94,16 +74,8 @@ printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_buf_map_attachment\n
     return 0;
 
 l_buf_attach:
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_buf_detach from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_buf_detach called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_buf_detach\n");
     dma_buf_detach(dmabuf, dmabuf_attachment);
 l_buf_get:
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_buf_put from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_buf_put called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_buf_put\n");
     dma_buf_put(dmabuf);
 cleanup:
     return ret;
@@ -111,21 +83,8 @@ cleanup:
 
 static void hailo_unmap_dmabuf(struct hailo_vdma_buffer *vdma_buffer)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_unmap_dmabuf at %s:%d\n", __FILE__, __LINE__);
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_buf_unmap_attachment from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_buf_unmap_attachment called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_buf_unmap_attachment\n");
     dma_buf_unmap_attachment(vdma_buffer->dmabuf_info.dmabuf_attachment, vdma_buffer->dmabuf_info.dmabuf_sg_table, vdma_buffer->data_direction);
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_buf_detach from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_buf_detach called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_buf_detach\n");
     dma_buf_detach(vdma_buffer->dmabuf_info.dmabuf, vdma_buffer->dmabuf_info.dmabuf_attachment);
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_buf_put from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_buf_put called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_buf_put\n");
     dma_buf_put(vdma_buffer->dmabuf_info.dmabuf);
 }
 
@@ -134,7 +93,6 @@ printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_buf_put\n");
 static int hailo_map_dmabuf(struct device *dev, int dmabuf_fd, enum dma_data_direction direction, struct sg_table *sgt,
     struct hailo_dmabuf_info *dmabuf_info)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_map_dmabuf at %s:%d\n", __FILE__, __LINE__);
     (void) dmabuf_fd;
     (void) direction;
     (void) sgt;
@@ -145,7 +103,6 @@ static int hailo_map_dmabuf(struct device *dev, int dmabuf_fd, enum dma_data_dir
 
 static void hailo_unmap_dmabuf(struct hailo_vdma_buffer *vdma_buffer)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_unmap_dmabuf at %s:%d\n", __FILE__, __LINE__);
     dev_err(vdma_buffer->device, "dmabuf not supported in kernel versions lower than 3.3.0\n");
     return -EINVAL;
 }
@@ -155,12 +112,10 @@ static void hailo_unmap_dmabuf(struct hailo_vdma_buffer *vdma_buffer)
 // Function that checks if the vma is backed by a mapped dmabuf
 static bool is_dmabuf_vma(struct vm_area_struct *vma)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function is_dmabuf_vma at %s:%d\n", __FILE__, __LINE__);
     return (vma && vma->vm_file && (0 == strcmp(vma->vm_file->f_path.dentry->d_name.name, VMA_VM_FILE_DMABUF_NAME)));
 }
 
 static int create_fd_from_vma(struct device *dev, struct vm_area_struct *vma) {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function create_fd_from_vma at %s:%d\n", __FILE__, __LINE__);
     struct file *file = NULL;
     int fd = 0;
 
@@ -191,7 +146,6 @@ struct hailo_vdma_buffer *hailo_vdma_buffer_map(struct device *dev,
     uintptr_t user_address, size_t size, enum dma_data_direction direction,
     enum hailo_dma_buffer_type buffer_type, struct hailo_vdma_low_memory_buffer *low_mem_driver_allocated_buffer)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_buffer_map at %s:%d\n", __FILE__, __LINE__);
     int ret = -EINVAL;
     struct hailo_vdma_buffer *mapped_buffer = NULL;
     struct sg_table sgt = {0};
@@ -261,10 +215,6 @@ struct hailo_vdma_buffer *hailo_vdma_buffer_map(struct device *dev,
             fput(vma->vm_file);
             put_unused_fd(user_address);
         }
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_map_sg from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_map_sg called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_map_sg\n");
     } else {
         // user_address is a standard 'struct page' backed memory address
         ret = prepare_sg_table(&sgt, user_address, size, low_mem_driver_allocated_buffer);
@@ -301,17 +251,12 @@ cleanup:
 
 static void unmap_buffer(struct kref *kref)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function unmap_buffer at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_buffer *buf = container_of(kref, struct hailo_vdma_buffer, kref);
 
     // If dmabuf - unmap and detatch dmabuf
     if (NULL != buf->dmabuf_info.dmabuf) {
         hailo_unmap_dmabuf(buf);
     } else {
-        printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_unmap_sg from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_unmap_sg called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_unmap_sg\n");
         if (!buf->is_mmio) {
             dma_unmap_sg(buf->device, buf->sg_table.sgl, buf->sg_table.orig_nents, buf->data_direction);
         }
@@ -323,31 +268,20 @@ printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_unmap_sg\n");
 
 void hailo_vdma_buffer_get(struct hailo_vdma_buffer *buf)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_buffer_get at %s:%d\n", __FILE__, __LINE__);
     kref_get(&buf->kref);
 }
 
 void hailo_vdma_buffer_put(struct hailo_vdma_buffer *buf)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_buffer_put at %s:%d\n", __FILE__, __LINE__);
     kref_put(&buf->kref, unmap_buffer);
 }
 
 static void vdma_sync_entire_buffer(struct hailo_vdma_controller *controller,
     struct hailo_vdma_buffer *mapped_buffer, enum hailo_vdma_buffer_sync_type sync_type)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function vdma_sync_entire_buffer at %s:%d\n", __FILE__, __LINE__);
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_sync_sg_for_cpu from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_sync_sg_for_cpu called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_sync_sg_for_cpu\n");
     if (sync_type == HAILO_SYNC_FOR_CPU) {
         dma_sync_sg_for_cpu(controller->dev, mapped_buffer->sg_table.sgl, mapped_buffer->sg_table.nents,
             mapped_buffer->data_direction);
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_sync_sg_for_device from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_sync_sg_for_device called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_sync_sg_for_device\n");
     } else {
         dma_sync_sg_for_device(controller->dev, mapped_buffer->sg_table.sgl, mapped_buffer->sg_table.nents,
             mapped_buffer->data_direction);
@@ -360,7 +294,6 @@ static void vdma_sync_buffer_interval(struct hailo_vdma_controller *controller,
     struct hailo_vdma_buffer *mapped_buffer,
     size_t offset, size_t size, enum hailo_vdma_buffer_sync_type sync_type)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function vdma_sync_buffer_interval at %s:%d\n", __FILE__, __LINE__);
     size_t sync_start_offset = offset;
     size_t sync_end_offset = offset + size;
     dma_sync_single_callback dma_sync_single = (sync_type == HAILO_SYNC_FOR_CPU) ?
@@ -386,7 +319,6 @@ void hailo_vdma_buffer_sync(struct hailo_vdma_controller *controller,
     struct hailo_vdma_buffer *mapped_buffer, enum hailo_vdma_buffer_sync_type sync_type,
     size_t offset, size_t size)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_buffer_sync at %s:%d\n", __FILE__, __LINE__);
     if ((IS_ENABLED(HAILO_SUPPORT_MMIO_DMA_MAPPING) && mapped_buffer->is_mmio) || 
         (NULL != mapped_buffer->dmabuf_info.dmabuf)) {
         // MMIO buffers and dmabufs don't need to be sync'd
@@ -405,7 +337,6 @@ void hailo_vdma_buffer_sync_cyclic(struct hailo_vdma_controller *controller,
     struct hailo_vdma_buffer *mapped_buffer, enum hailo_vdma_buffer_sync_type sync_type,
     size_t offset, size_t size)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_buffer_sync_cyclic at %s:%d\n", __FILE__, __LINE__);
     size_t size_to_end = min(size, mapped_buffer->size - offset);
 
     hailo_vdma_buffer_sync(controller, mapped_buffer, sync_type, offset, size_to_end);
@@ -418,7 +349,6 @@ void hailo_vdma_buffer_sync_cyclic(struct hailo_vdma_controller *controller,
 struct hailo_vdma_buffer* hailo_vdma_find_mapped_user_buffer(struct hailo_vdma_file_context *context,
     size_t buffer_handle)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_find_mapped_user_buffer at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_buffer *cur = NULL;
     list_for_each_entry(cur, &context->mapped_user_buffer_list, mapped_user_buffer_list) {
         if (cur->handle == buffer_handle) {
@@ -431,7 +361,6 @@ struct hailo_vdma_buffer* hailo_vdma_find_mapped_user_buffer(struct hailo_vdma_f
 void hailo_vdma_clear_mapped_user_buffer_list(struct hailo_vdma_file_context *context,
     struct hailo_vdma_controller *controller)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_clear_mapped_user_buffer_list at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_buffer *cur = NULL, *next = NULL;
     list_for_each_entry_safe(cur, next, &context->mapped_user_buffer_list, mapped_user_buffer_list) {
         list_del(&cur->mapped_user_buffer_list);
@@ -443,7 +372,6 @@ void hailo_vdma_clear_mapped_user_buffer_list(struct hailo_vdma_file_context *co
 int hailo_desc_list_create(struct device *dev, u32 descriptors_count, u16 desc_page_size,
     uintptr_t desc_handle, bool is_circular, struct hailo_descriptors_list_buffer *descriptors)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_desc_list_create at %s:%d\n", __FILE__, __LINE__);
     size_t buffer_size = 0;
     const u64 align = VDMA_DESCRIPTOR_LIST_ALIGN; //First addr must be aligned on 64 KB  (from the VDMA registers documentation)
 
@@ -455,10 +383,6 @@ int hailo_desc_list_create(struct device *dev, u32 descriptors_count, u16 desc_p
     buffer_size = descriptors_count * sizeof(struct hailo_vdma_descriptor);
     buffer_size = ALIGN(buffer_size, align);
 
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_alloc_coherent from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_alloc_coherent called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_alloc_coherent\n");
     descriptors->kernel_address = dma_alloc_coherent(dev, buffer_size,
         &descriptors->dma_address, GFP_KERNEL | __GFP_ZERO);
     if (descriptors->kernel_address == NULL) {
@@ -483,18 +407,12 @@ printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_alloc_coherent\n");
 
 void hailo_desc_list_release(struct device *dev, struct hailo_descriptors_list_buffer *descriptors)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_desc_list_release at %s:%d\n", __FILE__, __LINE__);
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_free_coherent from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_free_coherent called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_free_coherent\n");
     dma_free_coherent(dev, descriptors->buffer_size, descriptors->kernel_address, descriptors->dma_address);
 }
 
 struct hailo_descriptors_list_buffer* hailo_vdma_find_descriptors_buffer(struct hailo_vdma_file_context *context,
     uintptr_t desc_handle)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_find_descriptors_buffer at %s:%d\n", __FILE__, __LINE__);
     struct hailo_descriptors_list_buffer *cur = NULL;
     list_for_each_entry(cur, &context->descriptors_buffer_list, descriptors_buffer_list) {
         if (cur->handle == desc_handle) {
@@ -507,7 +425,6 @@ struct hailo_descriptors_list_buffer* hailo_vdma_find_descriptors_buffer(struct 
 void hailo_vdma_clear_descriptors_buffer_list(struct hailo_vdma_file_context *context,
     struct hailo_vdma_controller *controller)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_clear_descriptors_buffer_list at %s:%d\n", __FILE__, __LINE__);
     struct hailo_descriptors_list_buffer *cur = NULL, *next = NULL;
     list_for_each_entry_safe(cur, next, &context->descriptors_buffer_list, descriptors_buffer_list) {
         list_del(&cur->descriptors_buffer_list);
@@ -518,7 +435,6 @@ void hailo_vdma_clear_descriptors_buffer_list(struct hailo_vdma_file_context *co
 
 int hailo_vdma_low_memory_buffer_alloc(size_t size, struct hailo_vdma_low_memory_buffer *low_memory_buffer)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_low_memory_buffer_alloc at %s:%d\n", __FILE__, __LINE__);
     int ret = -EINVAL;
     void *kernel_address = NULL;
     size_t pages_count = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
@@ -564,7 +480,6 @@ cleanup:
 
 void hailo_vdma_low_memory_buffer_free(struct hailo_vdma_low_memory_buffer *low_memory_buffer)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_low_memory_buffer_free at %s:%d\n", __FILE__, __LINE__);
     size_t i = 0;
     if (NULL == low_memory_buffer) {
         return;
@@ -580,7 +495,6 @@ void hailo_vdma_low_memory_buffer_free(struct hailo_vdma_low_memory_buffer *low_
 struct hailo_vdma_low_memory_buffer* hailo_vdma_find_low_memory_buffer(struct hailo_vdma_file_context *context,
     uintptr_t buf_handle)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_find_low_memory_buffer at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_low_memory_buffer *cur = NULL;
     list_for_each_entry(cur, &context->vdma_low_memory_buffer_list, vdma_low_memory_buffer_list) {
         if (cur->handle == buf_handle) {
@@ -593,7 +507,6 @@ struct hailo_vdma_low_memory_buffer* hailo_vdma_find_low_memory_buffer(struct ha
 
 void hailo_vdma_clear_low_memory_buffer_list(struct hailo_vdma_file_context *context)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_clear_low_memory_buffer_list at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_low_memory_buffer *cur = NULL, *next = NULL;
     list_for_each_entry_safe(cur, next, &context->vdma_low_memory_buffer_list, vdma_low_memory_buffer_list) {
         list_del(&cur->vdma_low_memory_buffer_list);
@@ -605,14 +518,9 @@ void hailo_vdma_clear_low_memory_buffer_list(struct hailo_vdma_file_context *con
 int hailo_vdma_continuous_buffer_alloc(struct device *dev, size_t size,
     struct hailo_vdma_continuous_buffer *continuous_buffer)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_continuous_buffer_alloc at %s:%d\n", __FILE__, __LINE__);
     dma_addr_t dma_address = 0;
     void *kernel_address = NULL;
 
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_alloc_coherent from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_alloc_coherent called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_alloc_coherent\n");
     kernel_address = dma_alloc_coherent(dev, size, &dma_address, GFP_KERNEL);
     if (NULL == kernel_address) {
         dev_warn(dev, "Failed to allocate continuous buffer, size 0x%zx. This failure means there is not a sufficient amount of CMA memory "
@@ -629,11 +537,6 @@ printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_alloc_coherent\n");
 void hailo_vdma_continuous_buffer_free(struct device *dev,
     struct hailo_vdma_continuous_buffer *continuous_buffer)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_continuous_buffer_free at %s:%d\n", __FILE__, __LINE__);
-    printk(KERN_INFO "DMA_INSTRUMENT: About to call dma_free_coherent from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "DMA_STACK_START: Stack trace for dma_free_coherent called from %s\n", __func__);
-dump_stack();
-printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_free_coherent\n");
     dma_free_coherent(dev, continuous_buffer->size, continuous_buffer->kernel_address,
         continuous_buffer->dma_address);
 }
@@ -641,7 +544,6 @@ printk(KERN_INFO "DMA_STACK_END: End of stack trace for dma_free_coherent\n");
 struct hailo_vdma_continuous_buffer* hailo_vdma_find_continuous_buffer(struct hailo_vdma_file_context *context,
     uintptr_t buf_handle)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_find_continuous_buffer at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_continuous_buffer *cur = NULL;
     list_for_each_entry(cur, &context->continuous_buffer_list, continuous_buffer_list) {
         if (cur->handle == buf_handle) {
@@ -655,7 +557,6 @@ struct hailo_vdma_continuous_buffer* hailo_vdma_find_continuous_buffer(struct ha
 void hailo_vdma_clear_continuous_buffer_list(struct hailo_vdma_file_context *context,
     struct hailo_vdma_controller *controller)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_clear_continuous_buffer_list at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_continuous_buffer *cur = NULL, *next = NULL;
     list_for_each_entry_safe(cur, next, &context->continuous_buffer_list, continuous_buffer_list) {
         list_del(&cur->continuous_buffer_list);
@@ -670,7 +571,6 @@ void hailo_vdma_clear_continuous_buffer_list(struct hailo_vdma_file_context *con
 static int map_mmio_address(uintptr_t user_address, u32 size, struct vm_area_struct *vma,
     struct sg_table *sgt)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function map_mmio_address at %s:%d\n", __FILE__, __LINE__);
     int ret = -EINVAL;
     unsigned long i = 0;
     unsigned long pfn = 0;
@@ -730,7 +630,6 @@ static int map_mmio_address(uintptr_t user_address, u32 size, struct vm_area_str
 static int map_mmio_address(uintptr_t user_address, u32 size, struct vm_area_struct *vma,
     struct sg_table *sgt)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function map_mmio_address at %s:%d\n", __FILE__, __LINE__);
     (void) user_address;
     (void) size;
     (void) vma;
@@ -744,7 +643,6 @@ static int map_mmio_address(uintptr_t user_address, u32 size, struct vm_area_str
 static int prepare_sg_table(struct sg_table *sg_table, uintptr_t user_address, u32 size,
     struct hailo_vdma_low_memory_buffer *low_mem_driver_allocated_buffer)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function prepare_sg_table at %s:%d\n", __FILE__, __LINE__);
     int ret = -EINVAL;
     int pinned_pages = 0;
     size_t npages = 0;
@@ -812,7 +710,6 @@ exit:
 
 static void clear_sg_table(struct sg_table *sgt)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function clear_sg_table at %s:%d\n", __FILE__, __LINE__);
     struct sg_page_iter iter;
     struct page *page = NULL;
 
