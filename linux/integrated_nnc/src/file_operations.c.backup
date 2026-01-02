@@ -3,14 +3,6 @@
  * Copyright (c) 2019-2024 Hailo Technologies Ltd. All rights reserved.
  **/
 
-
-/* MULTI_INSTRUMENT: Auto-added headers */
-#include <asm/stacktrace.h>
-#include <linux/kernel.h>
-#include <linux/printk.h>
-#include <linux/sched.h>
-#include <linux/uaccess.h>
-
 #include <linux/err.h>
 #include <linux/module.h>
 #include <linux/pagemap.h>
@@ -55,7 +47,6 @@ inline struct hailo_board* inode_to_board(struct inode *inode) {
 
 static int hailo_integrated_nnc_fops_open(struct inode *inode, struct file *filp)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_integrated_nnc_fops_open called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_board *board = inode_to_board(inode);
     struct hailo_file_context *context = NULL;
     int err = 0;
@@ -93,7 +84,6 @@ static int hailo_integrated_nnc_fops_open(struct inode *inode, struct file *filp
 
 static int hailo_integrated_nnc_fops_release(struct inode *inode, struct file *filp)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_integrated_nnc_fops_release called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_board *board = inode_to_board(inode);
     struct hailo_file_context *context = filp->private_data;
     int ret = 0;
@@ -120,14 +110,11 @@ static int hailo_integrated_nnc_fops_release(struct inode *inode, struct file *f
 
 static long hailo_memory_transfer_ioctl(struct hailo_board *board, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_memory_transfer_ioctl called at %s:%d\n", __FILE__, __LINE__);
     long err = 0;
     struct hailo_memory_transfer_params* transfer = &board->memory_transfer_params;
 
     hailo_dbg(board, "Start memory transfer ioctl\n");
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(transfer, (void __user*)arg, sizeof(*transfer))) {
         hailo_err(board, "copy_from_user fail\n");
         return -EFAULT;
@@ -168,8 +155,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
         return err;
     }
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, transfer, sizeof(*transfer))) {
         hailo_err(board, "copy_to_user fail\n");
         return -EFAULT;
@@ -180,7 +165,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 
 static long hailo_general_ioctl(struct hailo_board *board, unsigned int cmd, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_general_ioctl called at %s:%d\n", __FILE__, __LINE__);
     switch (cmd) {
     case HAILO_MEMORY_TRANSFER:
         return hailo_memory_transfer_ioctl(board, arg);
@@ -197,7 +181,6 @@ static long hailo_general_ioctl(struct hailo_board *board, unsigned int cmd, uns
 static long hailo_nnc_ioctl(struct hailo_board *board, unsigned int cmd, unsigned long arg,
     struct file *filp, bool *should_up_board_mutex)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_nnc_ioctl called at %s:%d\n", __FILE__, __LINE__);
     switch (cmd) {
     case HAILO_FW_CONTROL:
         return hailo_fw_control(board, arg, should_up_board_mutex);
@@ -219,7 +202,6 @@ static long hailo_nnc_ioctl(struct hailo_board *board, unsigned int cmd, unsigne
 
 static long hailo_integrated_nnc_fops_unlockedioctl(struct file* filp, unsigned int cmd, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_integrated_nnc_fops_unlockedioctl called at %s:%d\n", __FILE__, __LINE__);
     long err = 0;
     bool should_up_board_mutex = true;
     struct hailo_board *board = inode_to_board(filp->f_inode);
@@ -304,8 +286,6 @@ static long hailo_query_device_properties(struct hailo_board *board, unsigned lo
 
     hailo_info(board, "HAILO_QUERY_DEVICE_PROPERTIES: desc_max_page_size=%u\n", props.desc_max_page_size);
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, &props, sizeof(props))) {
         hailo_err(board, "HAILO_QUERY_DEVICE_PROPERTIES, copy_to_user failed\n");
         return -ENOMEM;
@@ -325,8 +305,6 @@ static long hailo_query_driver_info(struct hailo_board *board, unsigned long arg
     hailo_info(board, "HAILO_QUERY_DRIVER_INFO: major=%u, minor=%u, revision=%u\n",
         info.major_version, info.minor_version, info.revision_version);
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, &info, sizeof(info))) {
         hailo_err(board, "HAILO_QUERY_DRIVER_INFO, copy_to_user failed\n");
         return -ENOMEM;
@@ -337,12 +315,9 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 
 static long hailo_read_log_ioctl(struct hailo_board *board, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_read_log_ioctl called at %s:%d\n", __FILE__, __LINE__);
     long err = 0;
     struct hailo_read_log_params params;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&params, (void __user*)arg, sizeof(params))) {
         hailo_err(board, "HAILO_READ_LOG, copy_from_user fail\n");
         return -ENOMEM;
@@ -353,8 +328,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
         return err;
     }
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void*)arg, &params, sizeof(params))) {
         return -ENOMEM;
     }
@@ -364,17 +337,13 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 
 static long hailo_reset_nn_core_ioctl(struct hailo_board *board, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_reset_nn_core_ioctl called at %s:%d\n", __FILE__, __LINE__);
     return reset_control_reset(board->nn_core_reset);
 }
 
 static long hailo_write_action_list_ioctl(struct hailo_board *board, struct hailo_file_context *context, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_write_action_list_ioctl called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_write_action_list_params params;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&params, (void __user*)arg, sizeof(params))) {
         hailo_err(board, "HAILO_WRITE_ACTION_LIST, copy_from_user fail\n");
         return -EINVAL;
@@ -385,8 +354,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
         return -EINVAL;
     }
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user((board->nnc_fw_shared_mem_info.kernel_address + context->offset_in_nnc_fw_shared_memory), (void __user*)params.data, params.size)) {
         hailo_err(board, "HAILO_WRITE_ACTION_LIST, copy_from_user fail\n");
         return -EINVAL;
@@ -395,8 +362,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
     params.dma_address = board->nnc_fw_shared_mem_info.dma_address + context->offset_in_nnc_fw_shared_memory;
     context->offset_in_nnc_fw_shared_memory += params.size;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, &params, sizeof(params))) {
         hailo_err(board, "HAILO_WRITE_ACTION_LIST, copy_to_user fail\n");
         return -EINVAL;

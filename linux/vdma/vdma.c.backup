@@ -3,14 +3,7 @@
  * Copyright (c) 2019-2024 Hailo Technologies Ltd. All rights reserved.
  **/
 
-
-/* MULTI_INSTRUMENT: Auto-added headers */
-#include <asm/stacktrace.h>
-#include <linux/kernel.h>
-#include <linux/printk.h>
-#include <linux/sched.h>
-#include <linux/uaccess.h>
-
+#define pr_fmt(fmt) "hailo: " fmt
 
 #include "vdma.h"
 #include "memory.h"
@@ -30,7 +23,6 @@
 static struct hailo_vdma_engine* init_vdma_engines(struct device *dev,
     struct hailo_resource *channel_registers_per_engine, size_t engines_count, u32 src_channels_bitmask)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function init_vdma_engines at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_engine *engines = NULL;
     u8 i = 0;
 
@@ -49,7 +41,6 @@ static struct hailo_vdma_engine* init_vdma_engines(struct device *dev,
 
 static int hailo_set_dma_mask(struct device *dev)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_set_dma_mask at %s:%d\n", __FILE__, __LINE__);
     int err = -EINVAL;
     /* Check and configure DMA length */
     if (!(err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64)))) {
@@ -75,7 +66,6 @@ int hailo_vdma_controller_init(struct hailo_vdma_controller *controller,
     struct hailo_vdma_controller_ops *ops,
     struct hailo_resource *channel_registers_per_engine, size_t engines_count)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_controller_init at %s:%d\n", __FILE__, __LINE__);
     int err = 0;
     controller->hw = vdma_hw;
     controller->ops = ops;
@@ -108,7 +98,6 @@ int hailo_vdma_controller_init(struct hailo_vdma_controller *controller,
 
 void hailo_vdma_file_context_init(struct hailo_vdma_file_context *context)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_file_context_init at %s:%d\n", __FILE__, __LINE__);
     atomic_set(&context->last_vdma_user_buffer_handle, 0);
     INIT_LIST_HEAD(&context->mapped_user_buffer_list);
 
@@ -124,7 +113,6 @@ void hailo_vdma_file_context_init(struct hailo_vdma_file_context *context)
 void hailo_vdma_update_interrupts_mask(struct hailo_vdma_controller *controller,
     size_t engine_index)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_update_interrupts_mask at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_engine *engine = &controller->vdma_engines[engine_index];
     controller->ops->update_channel_interrupts(controller, engine_index, engine->enabled_channels);
 }
@@ -132,7 +120,6 @@ void hailo_vdma_update_interrupts_mask(struct hailo_vdma_controller *controller,
 void hailo_vdma_file_context_finalize(struct hailo_vdma_file_context *context,
     struct hailo_vdma_controller *controller, struct file *filp)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_file_context_finalize at %s:%d\n", __FILE__, __LINE__);
     size_t engine_index = 0;
     struct hailo_vdma_engine *engine = NULL;
     unsigned long irq_saved_flags = 0;
@@ -168,7 +155,6 @@ void hailo_vdma_file_context_finalize(struct hailo_vdma_file_context *context,
 void hailo_vdma_wakeup_interrupts(struct hailo_vdma_controller *controller, struct hailo_vdma_engine *engine, 
     u32 channels_bitmap)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_wakeup_interrupts at %s:%d\n", __FILE__, __LINE__);
     unsigned long irq_saved_flags = 0;
 
     spin_lock_irqsave(&controller->interrupts_lock, irq_saved_flags);
@@ -181,7 +167,6 @@ void hailo_vdma_wakeup_interrupts(struct hailo_vdma_controller *controller, stru
 void hailo_vdma_irq_handler(struct hailo_vdma_controller *controller,
     size_t engine_index, u32 channels_bitmap)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_irq_handler at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_engine *engine = NULL;
 
     BUG_ON(engine_index >= controller->vdma_engines_count);
@@ -195,8 +180,6 @@ void hailo_vdma_irq_handler(struct hailo_vdma_controller *controller,
 long hailo_vdma_ioctl(struct hailo_vdma_file_context *context, struct hailo_vdma_controller *controller,
     unsigned int cmd, unsigned long arg, struct file *filp, struct semaphore *mutex, bool *should_up_board_mutex)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_vdma_ioctl called at %s:%d\n", __FILE__, __LINE__);
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_ioctl at %s:%d\n", __FILE__, __LINE__);
     switch (cmd) {
     case HAILO_VDMA_ENABLE_CHANNELS:
         return hailo_vdma_enable_channels_ioctl(controller, arg, context);
@@ -239,7 +222,6 @@ long hailo_vdma_ioctl(struct hailo_vdma_file_context *context, struct hailo_vdma
 static int low_memory_buffer_mmap(struct hailo_vdma_controller *controller,
     struct hailo_vdma_low_memory_buffer *vdma_buffer, struct vm_area_struct *vma)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function low_memory_buffer_mmap at %s:%d\n", __FILE__, __LINE__);
     int err     = 0;
     size_t i    = 0;
     unsigned long vsize         = vma->vm_end - vma->vm_start;
@@ -277,7 +259,6 @@ static int low_memory_buffer_mmap(struct hailo_vdma_controller *controller,
 static int continuous_buffer_mmap(struct hailo_vdma_controller *controller,
     struct hailo_vdma_continuous_buffer *buffer, struct vm_area_struct *vma)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function continuous_buffer_mmap at %s:%d\n", __FILE__, __LINE__);
     int err = 0;
     const unsigned long vsize = vma->vm_end - vma->vm_start;
 
@@ -300,7 +281,6 @@ static int continuous_buffer_mmap(struct hailo_vdma_controller *controller,
 int hailo_vdma_mmap(struct hailo_vdma_file_context *context, struct hailo_vdma_controller *controller,
     struct vm_area_struct *vma, uintptr_t vdma_handle)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function hailo_vdma_mmap at %s:%d\n", __FILE__, __LINE__);
     struct hailo_vdma_low_memory_buffer *low_memory_buffer = NULL;
     struct hailo_vdma_continuous_buffer *continuous_buffer = NULL;
 
@@ -319,7 +299,6 @@ int hailo_vdma_mmap(struct hailo_vdma_file_context *context, struct hailo_vdma_c
 
 enum dma_data_direction get_dma_direction(enum hailo_dma_data_direction hailo_direction)
 {
-    printk(KERN_INFO "FUNC_ENTRY: Entering function get_dma_direction at %s:%d\n", __FILE__, __LINE__);
     switch (hailo_direction) {
     case HAILO_DMA_BIDIRECTIONAL:
         return DMA_BIDIRECTIONAL;

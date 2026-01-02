@@ -3,14 +3,6 @@
  * Copyright (c) 2019-2024 Hailo Technologies Ltd. All rights reserved.
  **/
 
-
-/* MULTI_INSTRUMENT: Auto-added headers */
-#include <asm/stacktrace.h>
-#include <linux/kernel.h>
-#include <linux/printk.h>
-#include <linux/sched.h>
-#include <linux/uaccess.h>
-
 #include <linux/version.h>
 #include <linux/pci.h>
 #include <linux/interrupt.h>
@@ -92,7 +84,6 @@ static struct hailo_file_context *find_file_context(struct hailo_pcie_board *boa
 
 int hailo_pcie_fops_open(struct inode *inode, struct file *filp)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_pcie_fops_open called at %s:%d\n", __FILE__, __LINE__);
     u32 major = MAJOR(inode->i_rdev);
     u32 minor = MINOR(inode->i_rdev);
     struct hailo_pcie_board *pBoard;
@@ -189,7 +180,6 @@ l_exit:
 
 int hailo_pcie_fops_release(struct inode *inode, struct file *filp)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_pcie_fops_release called at %s:%d\n", __FILE__, __LINE__);
     struct hailo_pcie_board *board = (struct hailo_pcie_board *)filp->private_data;
     struct hailo_file_context *context = NULL;
 
@@ -257,14 +247,11 @@ int hailo_pcie_fops_release(struct inode *inode, struct file *filp)
 
 static long hailo_memory_transfer_ioctl(struct hailo_pcie_board *board, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_memory_transfer_ioctl called at %s:%d\n", __FILE__, __LINE__);
     long err = 0;
     struct hailo_memory_transfer_params* transfer = &board->memory_transfer_params;
 
     hailo_dbg(board, "Start memory transfer ioctl\n");
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(transfer, (void __user*)arg, sizeof(*transfer))) {
         hailo_err(board, "copy_from_user fail\n");
         return -ENOMEM;
@@ -275,8 +262,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
         hailo_err(board, "memory transfer failed %ld", err);
     }
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, transfer, sizeof(*transfer))) {
         hailo_err(board, "copy_to_user fail\n");
         return -ENOMEM;
@@ -417,8 +402,6 @@ static long hailo_query_device_properties(struct hailo_pcie_board *board, unsign
 
     hailo_info(board, "HAILO_QUERY_DEVICE_PROPERTIES: desc_max_page_size=%u\n", props.desc_max_page_size);
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, &props, sizeof(props))) {
         hailo_err(board, "HAILO_QUERY_DEVICE_PROPERTIES, copy_to_user failed\n");
         return -ENOMEM;
@@ -438,8 +421,6 @@ static long hailo_query_driver_info(struct hailo_pcie_board *board, unsigned lon
     hailo_info(board, "HAILO_QUERY_DRIVER_INFO: major=%u, minor=%u, revision=%u\n",
         info.major_version, info.minor_version, info.revision_version);
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, &info, sizeof(info))) {
         hailo_err(board, "HAILO_QUERY_DRIVER_INFO, copy_to_user failed\n");
         return -ENOMEM;
@@ -450,7 +431,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 
 static long hailo_general_ioctl(struct hailo_pcie_board *board, unsigned int cmd, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_general_ioctl called at %s:%d\n", __FILE__, __LINE__);
     switch (cmd) {
     case HAILO_MEMORY_TRANSFER:
         return hailo_memory_transfer_ioctl(board, arg);
@@ -466,7 +446,6 @@ static long hailo_general_ioctl(struct hailo_pcie_board *board, unsigned int cmd
 
 long hailo_pcie_fops_unlockedioctl(struct file* filp, unsigned int cmd, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_pcie_fops_unlockedioctl called at %s:%d\n", __FILE__, __LINE__);
     long err = 0;
     struct hailo_pcie_board* board = (struct hailo_pcie_board*) filp->private_data;
     struct hailo_file_context *context = NULL;

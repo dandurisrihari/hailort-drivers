@@ -3,14 +3,6 @@
  * Copyright (c) 2019-2024 Hailo Technologies Ltd. All rights reserved.
  **/
 
-
-/* MULTI_INSTRUMENT: Auto-added headers */
-#include <asm/stacktrace.h>
-#include <linux/kernel.h>
-#include <linux/printk.h>
-#include <linux/sched.h>
-#include <linux/uaccess.h>
-
 #include "fw_control.h"
 #include "utils/logs.h"
 #include "utils/integrated_nnc_utils.h"
@@ -37,8 +29,6 @@ long hailo_fw_control(struct hailo_board *board, unsigned long arg, bool *should
         return -ERESTARTSYS;
     }
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(command, (void __user*)arg, sizeof(*command))) {
         hailo_err(board, "hailo_fw_control, copy_from_user fail\n");
         err = -ENOMEM;
@@ -93,8 +83,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 
     memcpy_fromio(&command->buffer, (void*)rx_control.address + response_header_size, command->buffer_len);
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, command, sizeof(*command))) {
         hailo_err(board, "hailo_fw_control, copy_to_user fail\n");
         err = -ENOMEM;

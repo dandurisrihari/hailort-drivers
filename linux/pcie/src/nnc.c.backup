@@ -7,14 +7,6 @@
  * The device supports sending controls, receiving notification and reading the FW log.
  */
 
-
-/* MULTI_INSTRUMENT: Auto-added headers */
-#include <asm/stacktrace.h>
-#include <linux/kernel.h>
-#include <linux/printk.h>
-#include <linux/sched.h>
-#include <linux/uaccess.h>
-
 #include "nnc.h"
 #include "hailo_ioctl_common.h"
 
@@ -65,8 +57,6 @@ static int hailo_fw_control(struct hailo_pcie_board *board, unsigned long arg, b
         return -ERESTARTSYS;
     }
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(command, (void __user*)arg, sizeof(*command))) {
         hailo_err(board, "hailo_fw_control, copy_from_user fail\n");
         err = -ENOMEM;
@@ -100,8 +90,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
         goto l_exit;
     }
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, command, sizeof(*command))) {
         hailo_err(board, "hailo_fw_control, copy_to_user fail\n");
         err = -ENOMEM;
@@ -132,7 +120,6 @@ static long hailo_get_notification_wait_thread(struct hailo_pcie_board *board, s
 static long hailo_read_notification_ioctl(struct hailo_pcie_board *board, unsigned long arg, struct file *filp,
     bool* should_up_board_mutex)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_read_notification_ioctl called at %s:%d\n", __FILE__, __LINE__);
     long err = 0;
     struct hailo_notification_wait *current_waiting_thread = NULL;
     struct hailo_d2h_notification *notification = &board->nnc.notification_to_user;
@@ -173,8 +160,6 @@ static long hailo_read_notification_ioctl(struct hailo_pcie_board *board, unsign
     memcpy(notification->buffer, board->nnc.notification_cache.buffer, notification->buffer_len);
     spin_unlock_irqrestore(&board->nnc.notification_read_spinlock, irq_saved_flags);
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void __user*)arg, notification, sizeof(*notification))) {
         hailo_err(board, "HAILO_READ_NOTIFICATION copy_to_user fail\n");
         err = -ENOMEM;
@@ -205,12 +190,9 @@ static long hailo_disable_notification(struct hailo_pcie_board *board, struct fi
 
 static long hailo_read_log_ioctl(struct hailo_pcie_board *board, unsigned long arg)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_read_log_ioctl called at %s:%d\n", __FILE__, __LINE__);
     long err = 0;
     struct hailo_read_log_params params;
 
-    printk(KERN_INFO "USER_COPY: About to call copy_from_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_from_user(&params, (void __user*)arg, sizeof(params))) {
         hailo_err(board, "HAILO_READ_LOG, copy_from_user fail\n");
         return -ENOMEM;
@@ -221,8 +203,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
         return err;
     }
 
-    printk(KERN_INFO "USER_COPY: About to call copy_to_user from function %s at %s:%d\n", __func__, __FILE__, __LINE__);
-printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, current->comm);
     if (copy_to_user((void*)arg, &params, sizeof(params))) {
         return -ENOMEM;
     }
@@ -233,7 +213,6 @@ printk(KERN_INFO "USER_COPY_CONTEXT: Process PID=%d, COMM=%s\n", current->pid, c
 long hailo_nnc_ioctl(struct hailo_pcie_board *board, unsigned int cmd, unsigned long arg,
     struct file *filp, bool *should_up_board_mutex)
 {
-    printk(KERN_INFO "IOCTL_HANDLER: Function hailo_nnc_ioctl called at %s:%d\n", __FILE__, __LINE__);
     switch (cmd) {
     case HAILO_FW_CONTROL:
         return hailo_fw_control(board, arg, should_up_board_mutex);
