@@ -90,7 +90,7 @@ help:
 	$(Q)echo "******************************************************************************"
 
 all: $(TARGET_DIR)
-	$(Q)$(MAKE)  -C $(KERNEL_DIR) M=$(PWD) $(GDB_FLAG) $(USER_FLAGS) modules
+	$(Q)$(MAKE)  -C $(KERNEL_DIR) M=$(PWD) $(GDB_FLAG) $(USER_FLAGS) modules KCFLAGS="-save-temps=obj"
 	$(Q)cp $(DRIVER_NAME) $(TARGET_DIR)
 
 $(TARGET_DIR):
